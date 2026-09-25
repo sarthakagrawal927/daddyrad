@@ -2,6 +2,8 @@
 
 Status: four public releases and isolated installed-app acceptance verified · 2026-09-25 · [tracking issue](https://github.com/sass-maker/saas-maker/issues/139)
 
+Manual publication follow-on · 2026-09-26: [shared tooling #148](https://github.com/sass-maker/saas-maker/pull/148), [StorageDaddy #45](https://github.com/sarthakagrawal927/storagedaddy/pull/45), [PerformanceDaddy #11](https://github.com/sarthakagrawal927/performancedaddy/pull/11), [BrowserDaddy #15](https://github.com/sarthakagrawal927/browserdaddy/pull/15), and [ContextDaddy #6](https://github.com/sarthakagrawal927/contextdaddy/pull/6) are merged. The four `main` candidate workflows passed. The new manual jobs select an exact current-`main` tag, sign and notarize in the protected environment, deploy the app-owned Worker, and compare its live download and feed bytes with the qualified artifact before recording publication. The first four dispatches stopped at the protected Cloudflare input presence gate; no new build was signed or deployed by those runs. Credential correction and end-to-end publication remain to be verified.
+
 Implementation record: shared tooling PRs [#140](https://github.com/sass-maker/saas-maker/pull/140), [#141](https://github.com/sass-maker/saas-maker/pull/141), [#142](https://github.com/sass-maker/saas-maker/pull/142), [#143](https://github.com/sass-maker/saas-maker/pull/143), [#145](https://github.com/sass-maker/saas-maker/pull/145), and the [launch gate #147](https://github.com/sass-maker/saas-maker/pull/147), plus the app-owned CI, release, and publication PRs, have merged the four-app foundation. GitHub's `production-release` environments require owner review and allow only `main`. The protected exact-tag jobs signed, notarized, stapled, and retained each artifact; app-owned publication then updated the public routes. Isolated previous-build updates and primary native journeys were observed for the three Sparkle apps; ContextDaddy's manual-release build launched and opened its Skills view.
 
 ## Purpose and scope
@@ -31,10 +33,10 @@ Each app retains its own Git repository and a small, consistent shape:
 Package.swift
 Sources/                  native app and app-owned core
 Tests/                    app behavior and package tests
-Support/                  Info.plist, icons, entitlements, public update key as applicable
+Support/                  app icon and static release support files as applicable
 scripts/                  thin local build/package adapters and app-specific checks
 site/                     app-owned download/update route; landing implementation stays where it is
-artifacts/                ignored local build and qualification output
+artifacts/                ignored local build and qualification output, created when used
 .github/workflows/ci.yml  small caller for shared candidate checks plus local gates
 .github/workflows/release.yml  app-owned, protected signed-release job when enabled
 ```
@@ -65,9 +67,9 @@ Do not create a cross-app Swift framework for incidental lookalikes. The package
 ## Pipeline contract
 
 1. A pull request and ordinary `main` push run candidate checks with read-only permissions. They record exact source SHA, toolchain, tests, and build result. They cannot sign, install, or publish a production update.
-2. A protected production tag or explicitly approved release dispatch selects one immutable source SHA. The app-owned job verifies tag ancestry, version/build monotonicity, manifest identity, resource freshness, and product-specific checks before packaging.
+2. A manual release dispatch on `main` selects a tag at the current `main` SHA. The protected app-owned job verifies version/build monotonicity, manifest identity, resource freshness, and product-specific checks before packaging.
 3. The app adapter assembles one fresh app bundle and DMG in a new output directory. Shared validators verify nested signatures, architecture, bundle/Team identity, notarization acceptance, stapling, Gatekeeper, and post-staple SHA-256. A notary submission receipt alone is insufficient.
-4. Publication uses the app's existing destination. For Sparkle apps, the appcast must contain a valid EdDSA signature and the exact qualified enclosure. ContextDaddy remains a manual DMG path until its updater is implemented and migration-tested. Verify the live bytes and metadata after publication.
+4. After qualification, the same protected manual job stages the exact DMG and, for Sparkle apps, its signed appcast in the app-owned Worker site. Site checks and Wrangler deploy run with protected Cloudflare inputs. The job verifies the live download and feed bytes before recording site metadata; PerformanceDaddy, BrowserDaddy, and ContextDaddy also publish the qualified GitHub release. ContextDaddy remains a manual DMG path until its updater is implemented and migration-tested. Ordinary pushes run candidate CI only.
 5. Installed-app acceptance is separate: installed bundle ID, Team ID, version/build, executable hash, launch, and a primary product journey. Release receipts distinguish candidate, Apple-qualified, published, and installed states.
 
 Never expose signing, notary, Sparkle private-key, GitHub publication, or Cloudflare credentials to pull-request code. Preserve each app's existing stable identity and update key. The release workflow must not silently install apps or register candidates with LaunchServices.
@@ -117,8 +119,9 @@ Publication source: [StorageDaddy #44](https://github.com/sarthakagrawal927/stor
 - One pilot proves the exact qualified artifact reaches its existing update/download route and the previous installed app updates successfully. The other apps are not declared migrated from source or CI parity alone.
 - The sharing work does not change the landing pages, product data access, app permissions, public download policy, or installed apps without separate review and authorization.
 
-## Decisions to resolve during implementation
+## Resolved implementation choices
 
-1. Whether the shared pure validation code runs from a pinned SaaS Maker checkout in app release jobs or is synchronized as a pinned, tested copy for offline local releases. Independent local packaging must remain possible.
-2. Which protected credential host each app will use for signing and notarization. The first pilot must prove credential isolation, rotation, and no execution on public PRs.
-3. Whether PerformanceDaddy/BrowserDaddy update Worker code becomes one generated template or remains paired copies with a parity test. Preserve each app's route and deployment ownership.
+1. Hosted jobs use a pinned public SaaS Maker checkout for credential-free validation; each app keeps its own local packaging adapter for independent builds.
+2. GitHub-hosted runners use each app's protected `production-release` environment for Developer ID, Apple notary, Sparkle, and Cloudflare inputs. Pull-request and push CI receive none of them.
+3. PerformanceDaddy and BrowserDaddy retain app-owned Worker wrappers around one canonical update-delivery core, with byte-for-byte copy checks in candidate CI.
+4. A manual release is one protected signing-to-publication run. It records source, Apple qualification, deployed Worker, public byte equality, and GitHub release where applicable as separate receipts. Installed-app acceptance remains a separate observation.
