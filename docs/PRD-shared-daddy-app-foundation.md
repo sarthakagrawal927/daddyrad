@@ -1,8 +1,8 @@
 # Shared Daddy app foundation
 
-Status: implementation in progress · 2026-09-25 · [tracking issue](https://github.com/sass-maker/saas-maker/issues/139)
+Status: four signed releases published · installed-app acceptance pending · 2026-09-25 · [tracking issue](https://github.com/sass-maker/saas-maker/issues/139)
 
-Implementation record: [shared tooling PR](https://github.com/sass-maker/saas-maker/pull/140), [StorageDaddy PR](https://github.com/sarthakagrawal927/storagedaddy/pull/39), [PerformanceDaddy PR](https://github.com/sarthakagrawal927/performancedaddy/pull/4), [BrowserDaddy PR](https://github.com/sarthakagrawal927/browserdaddy/pull/8), and [ContextDaddy PR](https://github.com/sarthakagrawal927/contextdaddy/pull/3). The first PR heads passed both existing and shared candidate CI in all four apps. GitHub's `production-release` environments now require owner review and allow only `main`. The app PRs add manual exact-tag release preflight; signing credentials are not yet configured and no app release has run. Signing, notarization, publication, and installed-app acceptance remain open gates.
+Implementation record: shared tooling PRs [#140](https://github.com/sass-maker/saas-maker/pull/140), [#141](https://github.com/sass-maker/saas-maker/pull/141), [#142](https://github.com/sass-maker/saas-maker/pull/142), [#143](https://github.com/sass-maker/saas-maker/pull/143), and [#145](https://github.com/sass-maker/saas-maker/pull/145), plus the app-owned CI, release, and publication PRs, have merged the four-app foundation. GitHub's `production-release` environments require owner review and allow only `main`. The protected exact-tag jobs signed, notarized, stapled, and retained each artifact; app-owned publication then updated the public routes. Previous-install Sparkle updates and primary native journeys have not yet been observed on installed apps.
 
 ## Purpose and scope
 
@@ -21,7 +21,7 @@ The closed [StorageDaddy issue #30](https://github.com/sarthakagrawal927/storage
 | Distribution | Local packager, signed DMG, optional notarization, release receipt, Sparkle appcast | Local packager, separate notarization/publication steps, Sparkle appcast | Same, with sandbox entitlements and container migration | Local packager and notarized DMG; no active Sparkle updater or appcast |
 | Shared code evidence | Sparkle helper and appcast script | Sparkle helper, appcast script, update Worker | Near-identical PerformanceDaddy scripts/Worker with app-specific values and one Sparkle setting | Local feature branch has a byte-identical `prepare-memory-pack.py`; public `main` does not |
 
-All four checked-in GitHub workflows currently stop at tests and a Release build. They do not qualify and publish an exact artifact. PerformanceDaddy and BrowserDaddy package scripts are close copies; their asset lists and BrowserDaddy's entitlements/container migration are real product differences. StorageDaddy and ContextDaddy share signing, DMG, notary, stapling, checksum, and receipt steps, but bundle different helpers and resources. The three Sparkle apps share the packaging mechanism while keeping distinct feed URLs and EdDSA keys. Current app-side `AppUpdates.swift` files also have different busy and permission behavior.
+At drafting time, the checked-in GitHub workflows stopped at tests and a Release build. PerformanceDaddy and BrowserDaddy package scripts were close copies; their asset lists and BrowserDaddy's entitlements/container migration were real product differences. StorageDaddy and ContextDaddy shared signing, DMG, notary, stapling, checksum, and receipt steps, but bundled different helpers and resources. The three Sparkle apps shared the packaging mechanism while keeping distinct feed URLs and EdDSA keys. App-side `AppUpdates.swift` files also had different busy and permission behavior.
 
 ## Target repository convention
 
@@ -71,6 +71,21 @@ Do not create a cross-app Swift framework for incidental lookalikes. The package
 5. Installed-app acceptance is separate: installed bundle ID, Team ID, version/build, executable hash, launch, and a primary product journey. Release receipts distinguish candidate, Apple-qualified, published, and installed states.
 
 Never expose signing, notary, Sparkle private-key, GitHub publication, or Cloudflare credentials to pull-request code. Preserve each app's existing stable identity and update key. The release workflow must not silently install apps or register candidates with LaunchServices.
+
+## Release record · 2026-09-25
+
+The four protected jobs passed from immutable release tags. Downloaded artifacts passed SHA-256, DMG integrity, Apple staple, Gatekeeper, and deep app-signature checks. The three Sparkle appcasts passed an independent Ed25519 verification against each app's committed public key. Public downloads and update enclosures were fetched after deployment and matched the qualified DMGs byte for byte; the public appcasts matched the qualified feeds byte for byte.
+
+| App | Tagged source and protected run | Published version, destination, and qualified DMG SHA-256 |
+| --- | --- | --- |
+| StorageDaddy | `fdb77e85002fc4c6d26b41b416dc2701bcbd8961` · [run 36162198860](https://github.com/sarthakagrawal927/storagedaddy/actions/runs/36162198860) | `v0.1.3-108` · [download](https://storage.daddyrad.com/download) · [Sparkle feed](https://storage.daddyrad.com/updates/appcast.xml) · `682a50d04b3574cbd153666c5ccf29f9cd3f40b7a9ff2aaa527ee6dc2ce0dee0` |
+| PerformanceDaddy | `a2b0eca31236e7aae6458c2c13cbdd8d73da4956` · [run 36161979051](https://github.com/sarthakagrawal927/performancedaddy/actions/runs/36161979051) | `v0.2.3-4` · [GitHub release](https://github.com/sarthakagrawal927/performancedaddy/releases/tag/v0.2.3-4) · [download](https://performance.daddyrad.com/download) · [Sparkle feed](https://performance.daddyrad.com/updates/appcast.xml) · `17ef4ae4fa9e1b890382e97ab0b34e04a55eb0c4f2671c5c15660b9f1972915e` |
+| BrowserDaddy | `3524dca6bd10a3b3037a836135b645a37fc1efd4` · [run 36161979509](https://github.com/sarthakagrawal927/browserdaddy/actions/runs/36161979509) | `v0.3.1-5` · [GitHub release](https://github.com/sarthakagrawal927/browserdaddy/releases/tag/v0.3.1-5) · [download](https://browser.daddyrad.com/download) · [Sparkle feed](https://browser.daddyrad.com/updates/appcast.xml) · `d9ec7ac1fc07e524fbebbe01cd18fb31966c810da9358da13039f0a71ad35f90` |
+| ContextDaddy | `f700345fed3d692332d6e4188a01dd46d85ee638` · [run 36158227806](https://github.com/sarthakagrawal927/contextdaddy/actions/runs/36158227806) | `v0.1.0-2` · [GitHub release](https://github.com/sarthakagrawal927/contextdaddy/releases/tag/v0.1.0-2) · [download](https://context.daddyrad.com/download) · `4c58e3a6bbfe2e36d1e67889ac8dd956e79f66468eb28015a31789a7973ab676` |
+
+StorageDaddy retains its existing website-only distribution. ContextDaddy remains a manual DMG download with no Sparkle feed. These are public-release receipts, not evidence that an installed app updated or completed a primary product journey.
+
+Publication source: [StorageDaddy #44](https://github.com/sarthakagrawal927/storagedaddy/pull/44), [PerformanceDaddy #8](https://github.com/sarthakagrawal927/performancedaddy/pull/8), [BrowserDaddy #12](https://github.com/sarthakagrawal927/browserdaddy/pull/12), and [ContextDaddy #5](https://github.com/sarthakagrawal927/contextdaddy/pull/5).
 
 ## Rollout
 
