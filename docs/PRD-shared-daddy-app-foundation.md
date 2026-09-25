@@ -2,6 +2,8 @@
 
 Status: implementation in progress · 2026-09-25 · [tracking issue](https://github.com/sass-maker/saas-maker/issues/139)
 
+Implementation record: [shared tooling PR](https://github.com/sass-maker/saas-maker/pull/140), [StorageDaddy PR](https://github.com/sarthakagrawal927/storagedaddy/pull/39), [PerformanceDaddy PR](https://github.com/sarthakagrawal927/performancedaddy/pull/4), [BrowserDaddy PR](https://github.com/sarthakagrawal927/browserdaddy/pull/8), and [ContextDaddy PR](https://github.com/sarthakagrawal927/contextdaddy/pull/3). The first PR heads passed both existing and shared candidate CI in all four apps. GitHub's `production-release` environments now require owner review and allow only `main`. The app PRs add manual exact-tag release preflight; signing credentials are not yet configured and no app release has run. Signing, notarization, publication, and installed-app acceptance remain open gates.
+
 ## Purpose and scope
 
 Give StorageDaddy, PerformanceDaddy, BrowserDaddy, and ContextDaddy one maintainable repository and CI/CD contract. A new Daddy macOS app should start with the same directory roles, candidate checks, release evidence, and update rules, while retaining its own native behavior, permissions, assets, signing inputs, and acceptance tests.
