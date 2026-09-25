@@ -1,0 +1,30 @@
+{
+  "name": "daddyrad",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-08-27",
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "routes": [
+    {
+      "pattern": "daddyrad.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.daddyrad.com",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false
+    }
+  }
+}
